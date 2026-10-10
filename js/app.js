@@ -31,7 +31,7 @@ function build(){
    +'<dl class="inf"><dt>전시기간</dt><dd>'+esc(INFO.term)+'</dd><dt>장소</dt><dd>'+esc(INFO.place)+'</dd><dt>초대일시</dt><dd>'+esc(INFO.open)+'</dd></dl>'
    +'<div class="row three"><button class="pri" data-go="1" type="button">작품 보기</button><button class="btn" data-sheet="1" type="button">작품 목록</button><button class="btn" data-go="about" type="button">작가의 말</button></div>'
    +'<div class="row2b"><button class="btn" data-go="guest" type="button">방명록 남기기</button></div>'
-   +'<p class="hint">작품은 화면을 옆으로 밀어서 넘깁니다. 벽에 붙은 작품 번호로 찾으려면 ‘작품 목록’을 누르세요. 사진을 누르면 확대되고, 두 손가락으로 더 크게 볼 수 있습니다.</p></div></section>';
+   +'<p class="hint">작품은 화면 아래의 ‘이전 작품’·‘다음 작품’ 버튼을 누르거나 화면을 옆으로 밀어서 넘길 수 있습니다. 벽에 붙은 작품 번호로 찾으려면 왼쪽 위 ‘작품 목록’을 누르세요. 사진을 누르면 확대되고, 두 손가락으로 더 크게 볼 수 있습니다.</p></div></section>';
 
   for(const w of WORKS){
     h+='<section class="s" data-id="'+w.n+'"><figure class="fig"><img data-n="'+w.n+'" alt="'+esc(w.t)+'"><p class="zhint">사진을 누르면 크게 볼 수 있어요</p></figure>'

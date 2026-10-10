@@ -21,16 +21,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .hp{position:absolute!important;left:-9999px;width:1px;height:1px;opacity:0}
 
 /* 상단바 */
-.bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:52px;padding:0 6px;border-bottom:1px solid var(--ln);flex:none}
-.bar .tb{background:none;border:0;min-height:48px;padding:0 10px;font-size:15px;font-weight:500;color:var(--mu)}
-.bar .tb:last-child{text-align:right}
+.bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:52px;padding:0 4px;border-bottom:1px solid var(--ln);flex:none}
+.bar{min-height:58px}
+.bar .tb{display:inline-flex;align-items:center;gap:6px;background:none;border:0;min-height:44px;padding:0 10px;font-size:15px;font-weight:500;color:var(--mu)}
+.bar .tb:last-child{justify-self:end;border:1px solid var(--ln);border-radius:22px;padding:0 14px;margin-right:6px;color:var(--tx)}
+.bar .tb.idx{justify-self:start;margin-left:6px;padding:0 16px 0 12px;border-radius:22px;background:var(--ac2);color:#1b2530;font-size:16px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.bar .tb.idx svg{width:20px;height:20px;fill:currentColor}
+.bar .tb.idx:active{transform:scale(.97)}
 #pos{font:700 16px/1 var(--serif);text-align:center}
 
 /* 가로 스와이프 레일 */
 #rail{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
 #rail::-webkit-scrollbar{display:none}
 .ld{margin:auto;color:var(--mu)}
-.s{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;overflow-y:auto;overscroll-behavior:contain;padding-bottom:36px}
+.s{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;overscroll-behavior-x:auto;touch-action:pan-x pan-y;padding-bottom:36px}
 
 /* 작품 슬라이드 */
 .fig{margin:0;padding:14px 14px 0}
