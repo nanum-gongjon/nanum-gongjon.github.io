@@ -1,0 +1,21 @@
+# 작품 이미지 보호: 생성형 AI 학습용 수집 및 이미지 검색 색인 거부 (규칙을 지키는 수집기에만 효력이 있음)
+# 카카오톡 링크 미리보기(og.jpg)가 막히지 않도록 일반 방문자(*)는 막지 않습니다.
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+User-agent: Google-Extended
+User-agent: CCBot
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Bytespider
+User-agent: Applebot-Extended
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Googlebot-Image
+Allow: /images/og.jpg
+Disallow: /images/
+
+User-agent: *
+Allow: /
