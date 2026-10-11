@@ -220,6 +220,9 @@ zm.querySelector('.x').addEventListener('click',zClose);
 /* ---------- 시작 ---------- */
 function start(){
   build();bindRail();
+  /* 작품 이미지 우클릭 메뉴·끌어다 놓기 차단 (이미지 위에서만 작동, 입력칸에는 영향 없음) */
+  document.addEventListener('contextmenu',e=>{if(e.target.closest('img,#zm'))e.preventDefault()});
+  document.addEventListener('dragstart',e=>{if(e.target.tagName==='IMG')e.preventDefault()});
   $('#bIdx').onclick=()=>sheet(true);$('#sx').onclick=()=>sheet(false);
   $('#pv').onclick=()=>go(cur-1,true);$('#nx').onclick=()=>go(cur+1,true);
   $('#sheet').addEventListener('click',e=>{
