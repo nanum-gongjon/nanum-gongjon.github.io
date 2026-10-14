@@ -5,6 +5,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
 const imgPath=(kind,n)=>'images/'+kind+'/'+pad(n)+'.webp';
+const docPath=(kind,n)=>'images/doc/'+kind+'/'+pad(n)+'.webp';
 const HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-linejoin="round"/></svg>';
 const fmt=iso=>{try{return new Date(iso).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}catch(e){return ''}};
 
@@ -47,6 +48,7 @@ function build(){
    +'<div class="sig"><span>서양화가<br>이충길</span><img src="images/artist.webp" width="92" height="122" alt="서양화가 이충길 화백" loading="lazy"></div>'
    +'<h3 style="margin-top:34px">약력</h3>'+Object.keys(BIO).map(k=>'<h4>'+esc(k)+'</h4><ul>'+BIO[k].map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul>').join('')
    +'<h4>작업실</h4><ul><li>부산광역시 동래구 사직북로48번길 206-4 (온천동)</li></ul>'
+   +'<div class="row" style="margin-top:26px"><button class="btn docb" data-doc="1" type="button">작가 관련 정보</button></div>'
    +'<h3 style="margin-top:30px">전시 안내</h3><p>'+esc(INFO.term)+'<br>'+esc(INFO.place)+'<br>'+esc(INFO.addr)+'<br>초대일시 '+esc(INFO.open)+'</p>'
    +'<div class="row" style="margin-top:6px"><a class="btn" target="_blank" rel="noopener" href="https://map.naver.com/p/search/'+encodeURIComponent(INFO.addr)+'">길찾기</a><a class="btn" href="tel:'+esc(INFO.tel)+'">전화하기</a><a class="btn" href="mailto:'+esc(INFO.mail)+'">이메일</a></div>'
    +'<div class="row" style="margin-top:14px"><button class="pri" data-go="guest" type="button" style="width:100%">방명록 남기기</button></div>'
@@ -124,6 +126,7 @@ function bindRail(){
     const im=t.closest('.fig img');if(im&&im.src){zoom(+im.dataset.n);return}
     const g=t.closest('[data-go]');if(g){goId(g.dataset.go,true);return}
     if(t.closest('[data-sheet]')){sheet(true);return}
+    if(t.closest('[data-doc]')){openDoc();return}
     const j=t.closest('.jump');if(j){const c=document.getElementById('cm'+j.dataset.n);if(c)c.scrollIntoView({behavior:'smooth',block:'start'});return}
     const b=t.closest('.like');if(b){
       const n=+b.dataset.n;b.disabled=true;
@@ -178,15 +181,27 @@ function zApply(){
   zi.style.transform='translate('+Z.x+'px,'+Z.y+'px) scale('+Z.s+')';
 }
 function zAt(px,py,ns){ns=Math.max(1,Math.min(6,ns));const k=ns/Z.s;Z.x=px-(px-Z.x)*k;Z.y=py-(py-Z.y)*k;Z.s=ns;zApply()}
-function zoom(n){
-  Z.n=n;Z.ready=false;Z.p.clear();zm.classList.add('open');
-  zi.onload=()=>{if(Z.n===n&&!Z.ready){Z.ready=true;zLayout()}};
-  zi.alt=WORKS.find(w=>w.n===n).t;zi.src=imgPath('view',n);
-  const L=new Image();L.onload=()=>{if(zm.classList.contains('open')&&Z.n===n)zi.src=L.src};L.src=imgPath('large',n); // 고해상도로 교체
+function openZoom(key,vs,ls,alt){
+  Z.n=key;Z.ready=false;Z.p.clear();zm.classList.add('open');
+  zi.onload=()=>{if(Z.n===key&&!Z.ready){Z.ready=true;zLayout()}};
+  zi.alt=alt;zi.src=vs;
+  const L=new Image();L.onload=()=>{if(zm.classList.contains('open')&&Z.n===key)zi.src=L.src};L.src=ls; // 고해상도로 교체
 }
-function zClose(){zm.classList.remove('open');zi.removeAttribute('src');Z.ready=false;Z.p.clear()}
+function zoom(n){openZoom(n,imgPath('view',n),imgPath('large',n),WORKS.find(w=>w.n===n).t)}
+/* 작가 관련 정보 쪽 확대: 이전/다음 쪽 버튼 포함 */
+let zDoc=-1;const zt=zm.querySelector('.zt'),ztOrig=zt.innerHTML;
+function zoomDoc(i){
+  const N=DOC.sizes.length;i=Math.max(1,Math.min(N,i));zDoc=i;
+  openZoom('d'+i,docPath('view',i),docPath('large',i),DOC.title+' '+i+'쪽');
+  zm.querySelectorAll('.zb,.zc').forEach(e=>e.hidden=false);
+  zm.querySelector('.zp').disabled=i===1;zm.querySelector('.zn').disabled=i===N;
+  zm.querySelector('.zc').textContent=i+' / '+N;
+  zt.innerHTML='두 손가락으로 확대 · 두 번 탭하면 확대/축소<br>휴대폰을 가로로 돌리면 더 크게 볼 수 있어요<br>ⓒ 2026 이충길 · 무단 전재 및 복제 금지';
+  const dl=$('#dvl'),p=dl&&dl.children[i-1];if(p)p.scrollIntoView({block:'nearest'});
+}
+function zClose(){zDoc=-1;zt.innerHTML=ztOrig;zm.querySelectorAll('.zb,.zc').forEach(e=>e.hidden=true);zm.classList.remove('open');zi.removeAttribute('src');Z.ready=false;Z.p.clear()}
 zm.addEventListener('pointerdown',e=>{
-  if(e.target.closest('.x'))return;
+  if(e.target.closest('.x,.zb'))return;
   try{zm.setPointerCapture(e.pointerId)}catch(x){}
   if(Z.p.size===0)Z.moved=false;
   Z.p.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY});
@@ -217,12 +232,44 @@ zm.addEventListener('pointerup',zUp);zm.addEventListener('pointercancel',zUp);
 zm.addEventListener('wheel',e=>{if(!Z.ready)return;e.preventDefault();zAt(e.clientX,e.clientY,Z.s*(e.deltaY<0?1.2:1/1.2))},{passive:false});
 zm.querySelector('.x').addEventListener('click',zClose);
 
+/* ---------- 작가 관련 정보 보기 (쪽별 이미지, 세로로 넘기며 보기 · 누르면 확대) ---------- */
+const dv=$('#dv');let dvBuilt=false,dvRaf=0;
+function dvOpen(){return dv.classList.contains('open')}
+function buildDoc(){
+  dvBuilt=true;const N=DOC.sizes.length;
+  $('#dvl').innerHTML=DOC.sizes.map((s,k)=>'<figure class="dp" data-i="'+(k+1)+'"><img src="'+docPath('view',k+1)+'" width="'+s[0]+'" height="'+s[1]+'" alt="'+esc(DOC.title)+' '+(k+1)+'쪽" loading="'+(k<2?'eager':'lazy')+'" decoding="async"><figcaption>'+(k+1)+' / '+N+'쪽</figcaption></figure>').join('')
+    +'<p class="dend">마지막 쪽입니다. 쪽을 누르면 크게 볼 수 있습니다.</p>';
+  $('#dvl').addEventListener('click',e=>{const f=e.target.closest('.dp');if(f)zoomDoc(+f.dataset.i)});
+  $('#dvl').addEventListener('scroll',()=>{if(dvRaf)return;dvRaf=requestAnimationFrame(()=>{dvRaf=0;dvCount()})},{passive:true});
+}
+function dvCount(){
+  const l=$('#dvl'),N=DOC.sizes.length,top=l.getBoundingClientRect().top+70;let c=1;
+  for(const f of l.querySelectorAll('.dp')){if(f.getBoundingClientRect().bottom>top){c=+f.dataset.i;break}c=+f.dataset.i}
+  $('#dvn').textContent=c+' / '+N+'쪽';
+}
+function openDoc(){
+  if(!dvBuilt)buildDoc();
+  dv.classList.add('open');dvCount();
+  try{history.pushState({dv:1},'')}catch(e){}
+}
+function closeDoc(fromPop){
+  if(!dvOpen())return;
+  dv.classList.remove('open');
+  if(!fromPop&&history.state&&history.state.dv){try{history.back()}catch(e){}}
+}
+addEventListener('popstate',()=>{
+  if(zm.classList.contains('open')){zClose();if(dvOpen()){try{history.pushState({dv:1},'')}catch(e){}}return}
+  if(dvOpen())closeDoc(true);
+});
+
 /* ---------- 시작 ---------- */
 function start(){
   build();bindRail();
   /* 작품 이미지 우클릭 메뉴·끌어다 놓기 차단 (이미지 위에서만 작동, 입력칸에는 영향 없음) */
   document.addEventListener('contextmenu',e=>{if(e.target.closest('img,#zm'))e.preventDefault()});
   document.addEventListener('dragstart',e=>{if(e.target.tagName==='IMG')e.preventDefault()});
+  $('#dvx').onclick=()=>closeDoc();
+  zm.querySelector('.zp').onclick=()=>zoomDoc(zDoc-1);zm.querySelector('.zn').onclick=()=>zoomDoc(zDoc+1);
   $('#bIdx').onclick=()=>sheet(true);$('#sx').onclick=()=>sheet(false);
   $('#pv').onclick=()=>go(cur-1,true);$('#nx').onclick=()=>go(cur+1,true);
   $('#sheet').addEventListener('click',e=>{
@@ -234,9 +281,11 @@ function start(){
   try{if(localStorage.getItem('big')==='1')$('#bSz').click()}catch(x){}
   addEventListener('keydown',e=>{
     if(/INPUT|TEXTAREA/.test(document.activeElement.tagName))return;
+    if(zDoc>0&&zm.classList.contains('open')){if(e.key==='ArrowRight')zoomDoc(zDoc+1);if(e.key==='ArrowLeft')zoomDoc(zDoc-1);if(e.key!=='Escape')return}
+    else if(dvOpen()&&e.key!=='Escape')return;
     if(e.key==='ArrowRight')go(cur+1,true);
     if(e.key==='ArrowLeft')go(cur-1,true);
-    if(e.key==='Escape'){sheet(false);zClose()}
+    if(e.key==='Escape'){if(zm.classList.contains('open'))zClose();else if(dvOpen())closeDoc();else sheet(false)}
   });
   addEventListener('resize',()=>{go(cur,false);if(zm.classList.contains('open')&&Z.ready)zLayout()});
   addEventListener('hashchange',()=>{const i=items.indexOf(location.hash.slice(1));if(i>=0&&i!==cur){cur=i;go(i,false);upd()}});

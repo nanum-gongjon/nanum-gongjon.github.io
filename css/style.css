@@ -141,3 +141,24 @@ img{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit
 
 @media (min-width:700px){#rail,.bar,.nv,.cr{max-width:560px;margin:0 auto;width:100%}}
 @media (prefers-reduced-motion:reduce){#sheet,#sheet .pn,#toast,.like svg{transition:none}}
+
+/* 작가 관련 정보 보기 */
+.docb{width:100%}
+#dv{position:fixed;inset:0;z-index:8;background:var(--bg);display:none;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+#dv.open{display:flex}
+.dh{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;min-height:58px;padding:0 10px;border-bottom:1px solid var(--ln);flex:none}
+.dh b{font:800 18px/1.2 var(--serif);text-align:center}
+.dh button{min-height:44px;padding:0 16px;border-radius:22px;background:var(--sf);border:1px solid var(--ln);font-weight:600}
+#dvn{min-width:64px;text-align:right;font-size:14px;font-weight:600;color:var(--mu);font-variant-numeric:tabular-nums}
+#dvl{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px 10px 28px;-webkit-overflow-scrolling:touch}
+.dp{margin:0 auto 16px;max-width:560px}
+.dp img{display:block;width:100%;height:auto;background:var(--sf);border:1px solid var(--ln);cursor:zoom-in}
+.dp figcaption{margin-top:4px;text-align:center;font-size:13px;color:var(--mu)}
+.dend{max-width:560px;margin:0 auto;text-align:center;color:var(--mu);font-size:14px}
+#dv .cr{padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+@media (min-width:700px){#dv .dh,#dv .cr{max-width:560px;margin:0 auto;width:100%}}
+#zm .zb{position:fixed;top:50%;z-index:10;width:44px;height:64px;margin-top:-32px;border:0;border-radius:6px;background:rgba(27,37,48,.72);color:#fff;font-size:34px;line-height:1}
+#zm .zb[hidden],#zm .zc[hidden]{display:none}
+#zm .zb:disabled{opacity:.25}
+#zm .zp{left:6px}#zm .zn{right:6px}
+#zm .zc{position:fixed;left:10px;top:calc(18px + env(safe-area-inset-top,0px));z-index:10;padding:6px 12px;border-radius:16px;background:rgba(27,37,48,.85);color:#fff;font-size:14px;font-weight:600}
