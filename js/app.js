@@ -5,7 +5,8 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
 const imgPath=(kind,n)=>'images/'+kind+'/'+pad(n)+'.webp';
-const docPath=(kind,n)=>'images/doc/'+kind+'/'+pad(n)+'.webp';
+let dk='portfolio';const D=()=>DOCS[dk];
+const docPath=(kind,n)=>'images/'+D().dir+'/'+kind+'/'+pad(n)+'.webp';
 const HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke-linejoin="round"/></svg>';
 const fmt=iso=>{try{return new Date(iso).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}catch(e){return ''}};
 
@@ -48,7 +49,7 @@ function build(){
    +'<div class="sig"><span>서양화가<br>이충길</span><img src="images/artist.webp" width="92" height="122" alt="서양화가 이충길 화백" loading="lazy"></div>'
    +'<h3 style="margin-top:34px">약력</h3>'+Object.keys(BIO).map(k=>'<h4>'+esc(k)+'</h4><ul>'+BIO[k].map(i=>'<li>'+esc(i)+'</li>').join('')+'</ul>').join('')
    +'<h4>작업실</h4><ul><li>부산광역시 동래구 사직북로48번길 206-4 (온천동)</li></ul>'
-   +'<div class="row" style="margin-top:26px"><button class="btn docb" data-doc="1" type="button">작가 관련 정보</button></div>'
+   +'<div class="row col" style="margin-top:26px"><button class="pri" data-doc="portfolio" type="button">작가 관련 정보(Portfolio) 보기</button><button class="pri" data-doc="guide" type="button">전시 관람 도우미(창작기법)</button><button class="pri" data-doc="nfc" type="button">전시 관람 도우미(NFC TAG)</button></div>'
    +'<h3 style="margin-top:30px">전시 안내</h3><p>'+esc(INFO.term)+'<br>'+esc(INFO.place)+'<br>'+esc(INFO.addr)+'<br>초대일시 '+esc(INFO.open)+'</p>'
    +'<div class="row" style="margin-top:6px"><a class="btn" target="_blank" rel="noopener" href="https://map.naver.com/p/search/'+encodeURIComponent(INFO.addr)+'">길찾기</a><a class="btn" href="tel:'+esc(INFO.tel)+'">전화하기</a><a class="btn" href="mailto:'+esc(INFO.mail)+'">이메일</a></div>'
    +'<div class="row" style="margin-top:14px"><button class="pri" data-go="guest" type="button" style="width:100%">방명록 남기기</button></div>'
@@ -126,7 +127,7 @@ function bindRail(){
     const im=t.closest('.fig img');if(im&&im.src){zoom(+im.dataset.n);return}
     const g=t.closest('[data-go]');if(g){goId(g.dataset.go,true);return}
     if(t.closest('[data-sheet]')){sheet(true);return}
-    if(t.closest('[data-doc]')){openDoc();return}
+    const dd=t.closest('[data-doc]');if(dd){openDoc(dd.dataset.doc);return}
     const j=t.closest('.jump');if(j){const c=document.getElementById('cm'+j.dataset.n);if(c)c.scrollIntoView({behavior:'smooth',block:'start'});return}
     const b=t.closest('.like');if(b){
       const n=+b.dataset.n;b.disabled=true;
@@ -191,8 +192,8 @@ function zoom(n){openZoom(n,imgPath('view',n),imgPath('large',n),WORKS.find(w=>w
 /* 작가 관련 정보 쪽 확대: 이전/다음 쪽 버튼 포함 */
 let zDoc=-1;const zt=zm.querySelector('.zt'),ztOrig=zt.innerHTML;
 function zoomDoc(i){
-  const N=DOC.sizes.length;i=Math.max(1,Math.min(N,i));zDoc=i;
-  openZoom('d'+i,docPath('view',i),docPath('large',i),DOC.title+' '+i+'쪽');
+  const N=D().sizes.length;i=Math.max(1,Math.min(N,i));zDoc=i;
+  openZoom(dk+i,docPath('view',i),docPath('large',i),D().title+' '+i+'쪽');
   zm.querySelectorAll('.zb,.zc').forEach(e=>e.hidden=false);
   zm.querySelector('.zp').disabled=i===1;zm.querySelector('.zn').disabled=i===N;
   zm.querySelector('.zc').textContent=i+' / '+N;
@@ -232,23 +233,25 @@ zm.addEventListener('pointerup',zUp);zm.addEventListener('pointercancel',zUp);
 zm.addEventListener('wheel',e=>{if(!Z.ready)return;e.preventDefault();zAt(e.clientX,e.clientY,Z.s*(e.deltaY<0?1.2:1/1.2))},{passive:false});
 zm.querySelector('.x').addEventListener('click',zClose);
 
-/* ---------- 작가 관련 정보 보기 (쪽별 이미지, 세로로 넘기며 보기 · 누르면 확대) ---------- */
-const dv=$('#dv');let dvBuilt=false,dvRaf=0;
+/* ---------- 자료 보기 (작가 관련 정보 · 관람 도우미 등: 쪽별 이미지, 세로로 넘기며 보기 · 누르면 확대) ---------- */
+const dv=$('#dv');let dvKey='',dvRaf=0;
 function dvOpen(){return dv.classList.contains('open')}
 function buildDoc(){
-  dvBuilt=true;const N=DOC.sizes.length;
-  $('#dvl').innerHTML=DOC.sizes.map((s,k)=>'<figure class="dp" data-i="'+(k+1)+'"><img src="'+docPath('view',k+1)+'" width="'+s[0]+'" height="'+s[1]+'" alt="'+esc(DOC.title)+' '+(k+1)+'쪽" loading="'+(k<2?'eager':'lazy')+'" decoding="async"><figcaption>'+(k+1)+' / '+N+'쪽</figcaption></figure>').join('')
+  dvKey=dk;const d=D(),N=d.sizes.length;
+  $('#dvt').textContent=d.title;dv.setAttribute('aria-label',d.title);
+  $('#dvl').innerHTML=d.sizes.map((s,k)=>'<figure class="dp" data-i="'+(k+1)+'"><img src="'+docPath('view',k+1)+'" width="'+s[0]+'" height="'+s[1]+'" alt="'+esc(d.title)+' '+(k+1)+'쪽" loading="'+(k<2?'eager':'lazy')+'" decoding="async"><figcaption>'+(k+1)+' / '+N+'쪽</figcaption></figure>').join('')
     +'<p class="dend">마지막 쪽입니다. 쪽을 누르면 크게 볼 수 있습니다.</p>';
-  $('#dvl').addEventListener('click',e=>{const f=e.target.closest('.dp');if(f)zoomDoc(+f.dataset.i)});
-  $('#dvl').addEventListener('scroll',()=>{if(dvRaf)return;dvRaf=requestAnimationFrame(()=>{dvRaf=0;dvCount()})},{passive:true});
+  $('#dvl').scrollTop=0;
 }
 function dvCount(){
-  const l=$('#dvl'),N=DOC.sizes.length,top=l.getBoundingClientRect().top+70;let c=1;
+  const l=$('#dvl'),N=D().sizes.length,top=l.getBoundingClientRect().top+70;let c=1;
   for(const f of l.querySelectorAll('.dp')){if(f.getBoundingClientRect().bottom>top){c=+f.dataset.i;break}c=+f.dataset.i}
   $('#dvn').textContent=c+' / '+N+'쪽';
 }
-function openDoc(){
-  if(!dvBuilt)buildDoc();
+function openDoc(key){
+  if(!DOCS[key])return;
+  dk=key;
+  if(dvKey!==key)buildDoc();
   dv.classList.add('open');dvCount();
   try{history.pushState({dv:1},'')}catch(e){}
 }
@@ -269,6 +272,8 @@ function start(){
   document.addEventListener('contextmenu',e=>{if(e.target.closest('img,#zm'))e.preventDefault()});
   document.addEventListener('dragstart',e=>{if(e.target.tagName==='IMG')e.preventDefault()});
   $('#dvx').onclick=()=>closeDoc();
+  $('#dvl').addEventListener('click',e=>{const f=e.target.closest('.dp');if(f)zoomDoc(+f.dataset.i)});
+  $('#dvl').addEventListener('scroll',()=>{if(dvRaf)return;dvRaf=requestAnimationFrame(()=>{dvRaf=0;dvCount()})},{passive:true});
   zm.querySelector('.zp').onclick=()=>zoomDoc(zDoc-1);zm.querySelector('.zn').onclick=()=>zoomDoc(zDoc+1);
   $('#bIdx').onclick=()=>sheet(true);$('#sx').onclick=()=>sheet(false);
   $('#pv').onclick=()=>go(cur-1,true);$('#nx').onclick=()=>go(cur+1,true);
